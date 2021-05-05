@@ -6,10 +6,11 @@ def processReport(file):
     # First extract relevant text from the report
     text = extract_text(file, page_numbers=[0])
     linedText = list(map(lambda y: y.strip(), filter(lambda x: x != '', text.splitlines())))
+    accType = accountType(linedText)
     return {"timeframe": extractTimeFrame(linedText),
-            "name": extractName(linedText),
-            "profit": extractProfit(linedText),
-            "accountType": accountType(linedText)}
+            "name": extractName(linedText, accType),
+            "profit": extractProfit(linedText, accType),
+            "accountType": accType}
 
 
 def accountType(text):
@@ -22,34 +23,36 @@ def accountType(text):
 
 def extractTimeFrame(reportText):
     """ This function returns TimeFrame of the report."""
-    pivot1 = reportText.index("Informe de actividad")
-    pivot2 = reportText.index("Ayuda")
-    resultPivot1 = reportText[pivot1 + 1]
-    resultPivot2 = reportText[pivot2 - 1]
+    pivot1, pivot2 = reportText.index("Informe de actividad"), reportText.index("Ayuda")
+    resultPivot1, resultPivot2 = reportText[pivot1 + 1], reportText[pivot2 - 1]
     if resultPivot1 == resultPivot2:
         return resultPivot1
     else:
         return "Fail"
 
 
-def extractName(reportText):
+def extractName(reportText, accType):
     """ This function returns the name of the author of the report."""
-    pivot1 = reportText.index("Valor liquidativo")
-    pivot2 = reportText.index("Individual")
-    resultPivot1 = reportText[pivot1 + 1]
-    resultPivot2 = reportText[pivot2 - 2]
+    if accType == "DEMO":
+        pivot1, pivot2 = reportText.index("Total"), reportText.index("Individual")
+        resultPivot1, resultPivot2 = reportText[pivot1 + 6], reportText[pivot2 - 2]
+    else:
+        pivot1, pivot2 = reportText.index("Ayuda"), reportText.index("Margen")
+        resultPivot1, resultPivot2 = reportText[pivot1 + 1], reportText[pivot2 - 4]
     if resultPivot1 == resultPivot2:
         return resultPivot1
     else:
         return "Fail"
 
 
-def extractProfit(reportText):
+def extractProfit(reportText, accType):
     """ This function returns the profit of the report."""
-    pivot1 = reportText.index("Cambio")
-    pivot2 = reportText.index("Short")
-    resultPivot1 = reportText[pivot1 + 1]
-    resultPivot2 = reportText[pivot2 - 1]
+    if accType == "DEMO":
+        pivot1, pivot2 = reportText.index("Cambio"), reportText.index("Short")
+        resultPivot1, resultPivot2 = reportText[pivot1 + 1], reportText[pivot2 - 1]
+    else:
+        pivot1, pivot2 = reportText.index("Cambio"), reportText.index("Valor inicial")
+        resultPivot1, resultPivot2 = reportText[pivot1 + 7], reportText[pivot2 - 3]
     if resultPivot1 == resultPivot2:
         return resultPivot1
     else:
